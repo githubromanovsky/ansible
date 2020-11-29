@@ -1,0 +1,58 @@
+---
+- name: Build server provisioning
+  hosts: build
+  become: yes
+
+  tasks:
+  - name: Ensure installing maven
+    apt:
+     name: maven
+     state: present
+
+  - name: Ensure installing default-jdk
+    apt:
+     name: default-jdk
+     state: present
+
+  - name: Ensure installing git
+    apt:
+     name: git
+     state: present
+
+  - name: Ensure clone repo
+    git:
+     repo: https://github.com/up1/maven_java_web_example.git
+     dest: /tmp/project
+
+  - name: Ensure build app
+     shell: mvn clean package
+     args:
+      chdir: /tmp/project
+
+- name: prod servers provisioning
+  hosts: prod
+  become: yes
+
+  tasks:
+   - name: Ensure tomcat9 package is present
+     apt:
+      name: tomcat9
+      state: present
+
+   - name: Ensure tomcat9 service is started
+     service:
+      name: tomcat9
+      state: started
+
+- name: Ensure fetching war-file
+  hosts: build
+  tasks:
+   - fetch:
+       src: /tmp/project/target/api.war
+       dest: ./api.war
+
+- name: Ensure copying war-file in prod
+  hosts: prod
+   - copy:
+       src: ./api.war
+       dest: /usr/local/tomcat/webapps/
