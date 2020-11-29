@@ -25,9 +25,9 @@
      dest: /tmp/project
 
   - name: Ensure build app
-     shell: mvn clean package
-     args:
-      chdir: /tmp/project
+    shell: mvn clean package
+    args:
+     chdir: /tmp/project
 
 - name: prod servers provisioning
   hosts: prod
@@ -46,13 +46,16 @@
 
 - name: Ensure fetching war-file
   hosts: build
+
   tasks:
    - fetch:
-       src: /tmp/project/target/api.war
-       dest: ./api.war
+      src: /tmp/project/target/api.war
+      dest: ./api.war
 
 - name: Ensure copying war-file in prod
   hosts: prod
+
+  tasks:
    - copy:
-       src: ./api.war
-       dest: /usr/local/tomcat/webapps/
+      src: ./api.war
+      dest: /usr/local/tomcat/webapps/
